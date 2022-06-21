@@ -1,0 +1,29 @@
+{
+  "name": "vatusa-discord-tmu",
+  "version": "1.1",
+  "description": "VATUSA Discord Bot",
+  "author": "Blake Nahin <b.nahin@vatusa.net>",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "jshint commands/ && jshint app.js"
+  },
+  "keywords": [
+    "vatusa"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@discordjs/builders": "^0.6.0",
+    "@discordjs/rest": "^0.1.0-canary.0",
+    "axios": "^0.21.2",
+    "cors": "^2.8.5",
+    "discord-api-types": "^0.24.0",
+    "discord.js": "^13.2.0",
+    "dotenv": "^10.0.0",
+    "erlpack": "github:hammerandchisel/erlpack",
+    "express": "^4.17.1",
+    "helmet": "^4.6.0",
+    "jshint": "^2.13.1",
+    "python": "0.0.4"
+  }
+}
