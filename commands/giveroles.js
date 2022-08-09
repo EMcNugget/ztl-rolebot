@@ -64,44 +64,29 @@ module.exports = {
             for (let i = 0; i < user.roles.length; i++) {
               //Roles Table
               const role = user.roles[i]
-              /*
-              if (role.role.match(/US\d+/)) {
-                const ownerName = interaction.guild.members.cache.get(interaction.guild.ownerId).nickname
-                //return sendError(interaction, MessageEmbed, `Since you have an administrator role, you must contact the Server Owner (${ownerName}) to receive your roles.`, res, false, 'Administrator Roles')
-              }
-              if (role.role === 'ACE') {
-                roles.push('ACE Team')
-              }
-              */
               if ((user.facility === role.facility)&&(role.role === 'ATM')) {
-                //facStaff.push('ATM')
                 roles.push('Air Traffic Manager')
                 roles.push('ZTL Sr Staff')
               }
               if ((user.facility === role.facility)&&(role.role === 'DATM')) {
-                //facStaff.push('DATM')
                 roles.push('Deputy Air Traffic Manager')
                 roles.push('ZTL Sr Staff')
                 roles.push('ZTL Staff')
               }
               if ((user.facility === role.facility)&&(role.role === 'TA')) {
-                //facStaff.push('TA')
                 roles.push('Training Administrator')
                 roles.push('ZTL Sr Staff')
                 roles.push('ZTL Staff')
               }
               if ((user.facility === role.facility)&&(role.role === 'EC')) {
-                //facStaff.push('EC')
                 roles.push('Events Coordinator')
                 roles.push('ZTL Staff')
               }
               if ((user.facility === role.facility)&&(role.role === 'FE')) {
-                //facStaff.push('FE')
                 roles.push('Facility Engineer')
                 roles.push('ZTL Staff')
               }
               if ((user.facility === role.facility)&&(role.role === 'WM')) {
-                //facStaff.push('WM')
                 roles.push('Webmaster')
                 roles.push('ZTL Staff')
               }
@@ -111,51 +96,7 @@ module.exports = {
               if ((role.facility === 'ZHQ')&&role.role.match(/US\d+/)) {
                 roles.push('VATUSA')
               }
-              /*
-              if (role.role === 'SMT') {
-                roles.push('Social Media Team')
-              }
-              if (role.role === 'USWT') {
-                roles.push('VATUSA Developer')
-              }
-              */
             }
-
-            //Determine Region
-            /*
-            const determineRegion = async function () {
-              if (user.facility === 'ZAE') roles.push('Academy')
-              else if (user.facility === 'ZZN') roles.push('Non-Member')
-              else if (user.facility !== 'ZHQ') {
-                await axios.get(process.env.API_URL + 'facility/' + user.facility).then(facResult => {
-                  const {status, data} = facResult
-                  if (status !== 200 || !data.data.hasOwnProperty('facility')) {
-                    return sendError(interaction, MessageEmbed, 'Unable to determine region from API.', res)
-                  }
-                  switch (parseInt(data.data.facility.info.region)) {
-                    case 5:
-                      roles.push('Southern Region')
-                      break
-                    case 6:
-                      roles.push('Midwestern Region')
-                      break
-                    case 7:
-                      roles.push('Northeastern Region')
-                      break
-                    case 8:
-                      roles.push('Western Region')
-                      break
-                  }
-                }).catch(error => {
-                  console.error(error)
-                  return sendError(interaction, MessageEmbed, 'Unable to determine region from API.', res)
-                })
-              }
-            }
-            */
-//            determineRegion().then(() => {
-              //Determine Rating
-              //roles.push(ratings[user.rating_short])
 
               if(user.rating_short === "OBS") {
                 roles.push('Observer')
@@ -199,23 +140,6 @@ module.exports = {
  
               //Determine Nickname
               newNick = `${user.fname} ${user.lname}`
-              /*
-              for (let i = 0; i < roles.length; i++) {
-                if (roles[i] === 'Academy') {
-                  newNick = `${user.fname} ${user.lname} | ZAE`
-                  i = roles.length
-                } else if (roles[i] === 'Non-Member') {
-                  newNick = `${user.fname} ${user.lname} | ${user.rating_short}`
-                  i = roles.length
-                } else if (facStaff.length > 0) {
-                  newNick = `${user.fname} ${user.lname} | ${user.facility} ${facStaff.join('/')}`
-                  i = roles.length
-                } else {
-                  newNick = `${user.fname} ${user.lname} | ${user.facility} ${user.rating_short}`
-                }
-              }
-              */
-
               //Assign Nickname
               if ((newNick !== member.nickname) && !member.permissions.has('ADMINISTRATOR')) {
                 nickChange = true
