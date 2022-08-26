@@ -1,18 +1,18 @@
-const {SlashCommandBuilder} = require('@discordjs/builders')
-const {MessageEmbed} = require('discord.js')
+const { SlashCommandBuilder } = require('@discordjs/builders')
+const { MessageEmbed } = require('discord.js')
 
 module.exports = {
-  name       : 'giveroles',
+  name: 'giveroles',
   description: 'Assign Roles from Linked Account',
-  data       : new SlashCommandBuilder()
+  data: new SlashCommandBuilder()
     .setName('giveroles')
     .setDescription('Assign roles for channel access. Your Discord account must be linked on the VATUSA website.'),
-  execute (interaction, id, res, g) {
+  execute(interaction, id, res, g) {
     //Initialize Vars
-    const {MessageEmbed} = require('discord.js'),
-          axios          = require('axios'),
-          https          = require('https'),
-          guild          = g ? g : interaction.guild
+    const { MessageEmbed } = require('discord.js'),
+      axios = require('axios'),
+      https = require('https'),
+      guild = g ? g : interaction.guild
 
     let req = axios
     //Check for dev API
@@ -27,158 +27,153 @@ module.exports = {
     //Make the API Call to determine user information
     req.get(process.env.API_URL + 'user/' + (interaction ? interaction.member.id : id) + '?d')
       .then(result => {
-          const {status, data} = result
-          if (status !== 200) {
-            sendError(interaction, MessageEmbed, 'Unable to communicate with API.', res)
-          } else {
-            const user = data.data
+        const { status, data } = result
+        if (status !== 200) {
+          sendError(interaction, MessageEmbed, 'Unable to communicate with API.', res)
+        } else {
+          const user = data.data
 
-            //Instantiate Variables
-            const member  = interaction ? interaction.member : guild.members.cache.get(id),
-                  ratings = {
-                    AFK: 'Inactive',
-                    SUS: 'Suspended',
-                    OBS: 'Observer',
-                    S1 : 'Student 1',
-                    S2 : 'Student 2',
-                    S3 : 'Student 3',
-                    C1 : 'Controller 1',
-                    C3 : 'Controller 3',
-                    I1 : 'Instructor 1',
-                    I3 : 'Instructor 3',
-                    SUP: 'Supervisor',
-                    ADM: 'Administrator',
-                  }
-            let roles      = [],
-                facStaff = [],
-                newNick    = member.nickname,
-                nickChange = false,
-                homeController = false,
-                visitingController = false
+          //Instantiate Variables
+          const member = interaction ? interaction.member : guild.members.cache.get(id)
+          let roles = [],
+            newNick = member.nickname,
+            nickChange = false,
+            homeController = false,
+            visitingController = false
 
-            if (member.permissions.has('ADMINISTRATOR')) {
-              const ownerName = interaction.guild.members.cache.get(interaction.guild.ownerId).nickname
-              //return sendError(interaction, MessageEmbed, `Since you have an administrator role, you must contact the Server Owner (${ownerName}) to receive your roles.`, res, false, 'Administrator Roles')
-            }
-            //Determine Roles
-            for (let i = 0; i < user.roles.length; i++) {
-              //Roles Table
-              const role = user.roles[i]
-              if ((user.facility === role.facility)&&(role.role === 'ATM')) {
+          if (member.permissions.has('ADMINISTRATOR')) {
+            const ownerName = interaction.guild.members.cache.get(interaction.guild.ownerId).nickname
+            return sendError(interaction, MessageEmbed, `Since you have an administrator role, you must contact the Server Owner (${ownerName}) to receive your roles.`, res, false, 'Administrator Roles')
+          }
+          //Determine Roles
+          for (let i = 0; i < user.roles.length; i++) {
+            //Roles Table
+            const role = user.roles[i]
+	    if(process.env.THIS_FACILITY === role.facility) {
+              if (role.role === 'ATM') {
                 roles.push('Air Traffic Manager')
                 roles.push('ZTL Sr Staff')
               }
-              if ((user.facility === role.facility)&&(role.role === 'DATM')) {
+              if (role.role === 'DATM') {
                 roles.push('Deputy Air Traffic Manager')
                 roles.push('ZTL Sr Staff')
                 roles.push('ZTL Staff')
               }
-              if ((user.facility === role.facility)&&(role.role === 'TA')) {
+              if (role.role === 'TA') {
                 roles.push('Training Administrator')
                 roles.push('ZTL Sr Staff')
                 roles.push('ZTL Staff')
               }
-              if ((user.facility === role.facility)&&(role.role === 'EC')) {
+              if (role.role === 'EC') {
                 roles.push('Events Coordinator')
                 roles.push('ZTL Staff')
               }
-              if ((user.facility === role.facility)&&(role.role === 'FE')) {
+              if (role.role === 'FE') {
                 roles.push('Facility Engineer')
                 roles.push('ZTL Staff')
               }
-              if ((user.facility === role.facility)&&(role.role === 'WM')) {
+              if (role.role === 'WM') {
                 roles.push('Webmaster')
                 roles.push('ZTL Staff')
               }
-              if ((user.facility === role.facility)&&((role.role === 'MTR')||(user.rating_short.includes('I')))) {
+              if (role.role === 'MTR') {
                 roles.push('ZTL Training Staff')
               }
-              if ((role.facility === 'ZHQ')&&role.role.match(/US\d+/)) {
-                roles.push('VATUSA')
-              }
+            }
+            if ((role.facility === 'ZHQ') && role.role.match(/US\d+/)) {
+              roles.push('VATUSA')
             }
 
-              if(user.rating_short === "OBS") {
-                roles.push('Observer')
-              }
-              else if(user.rating_short === "SUP") {
-                roles.push('Supervisor')
-              }
-              else if(user.facility === 'ZTL') {
-                roles.push(user.rating_short)
-                roles.push('ZTL')
-                homeController = true
-              }
-              else {
-                if(user.rating_short.includes('I')) {
-                  roles.push('C1')
-                }
-                else {
-                  roles.push(user.rating_short)
-                }
-              }
-
-              //Determine if visiting controller
-              for (let i = 0; i < user.visiting_facilities.length; i++) {
-                //Visiting Facilities Table
-                let visiting_facility = user.visiting_facilities[i].facility
-                if(visiting_facility === 'ZTL') {
-                  roles.push('Visitors')
-                  visitingController = true
-                }
-              }
-
-              //Assign role if not home nor visiting controller
-              if(!homeController && !visitingController) {
-                roles.push('VATSIM Member')
-              }
-
-              //Because Dhagash
-              if(user.cid === '1299471') {
-                roles.push('Quiet Dhagash')
-              }
- 
-              //Determine Nickname
-              newNick = `${user.fname} ${user.lname}`
-              //Assign Nickname
-              if ((newNick !== member.nickname) && !member.permissions.has('ADMINISTRATOR')) {
-                nickChange = true
-                member.setNickname(newNick, 'Roles Synchronization').catch(e => console.error(e))
-              }
-              //Assign Roles
-              let roleStr  = '',
-                  excluded = ['Pilots', 'Trainers', 'Server Booster', 'VATGOV', 'Muted', 'ATS-ZHQ', 'Champion of Halloween']
-              member.roles.cache.forEach(role => {
-                if (role.id !== guild.roles.everyone.id
-                  && excluded.indexOf(role.name) < 0
-                  && roles.indexOf(role.name) < 0)
-                  member.roles.remove(role).catch(e => console.error(e))
-              })
-              for (let i = 0; i < roles.length; i++) {
-                const role = guild.roles.cache.find(role => role.name === roles[i])
-                member.roles.add(role).catch(e => console.error(e))
-                roleStr += `${role} `
-              }
-              if (res)
-                return res.json({
-                  status: 'OK',
-                  msg   : `Your roles have been assigned, ${newNick}!<br><em>${roles.join(', ')}</em>`
-                })
-
-              const embed = new MessageEmbed()
-                // Set the title of the field
-                .setTitle('Your roles have been assigned.')
-                // Set the color of the embed
-                .setColor(0x5cb85c)
-                // Set the main content of the embed
-                .setDescription(roleStr)
-              embed.setFooter(nickChange ? `Your new nickname is: ${newNick}` : newNick)
-
-              // Send the embed to the same channel as the message
-              interaction.reply({embeds: [embed]})
-//            })
+          if (user.facility === process.env.THIS_FACILITY) {
+            roles.push('ZTL')
+            homeController = true
           }
+          //Determine controller rating role
+          if (user.rating_short === "OBS") {
+            roles.push('Observer')
+          }
+          else if (user.rating_short === "ADM") {
+            roles.push('ADM')
+          }
+          else if (user.rating_short === "SUP") {
+            roles.push('Supervisor')
+          }
+          else if (user.facility === process.env.THIS_FACILITY) {
+            roles.push(user.rating_short)
+            if (user.rating_short.includes('I')) {
+              roles.push('ZTL Training Staff')
+            }
+          }
+          else {
+            if (user.rating_short.includes('I')) {
+              roles.push('C1')
+            }
+            else {
+              roles.push(user.rating_short)
+            }
+          }
+
+          //Determine if visiting controller
+          for (let i = 0; i < user.visiting_facilities.length; i++) {
+            //Visiting Facilities Table
+            const visiting_facility = user.visiting_facilities[i].facility
+            if (visiting_facility === process.env.THIS_FACILITY) {
+              roles.push('Visitors')
+              visitingController = true
+            }
+          }
+
+          //Assign role if not home nor visiting controller
+          if (!homeController && !visitingController) {
+            roles.push('VATSIM Member')
+          }
+
+          //Because Dhagash
+          if (user.cid === '1299471') {
+            roles.push('Quiet Dhagash')
+          }
+
+          //Determine Nickname
+          newNick = `${user.fname} ${user.lname}`
+
+          //Assign Nickname
+          if ((newNick !== member.nickname) && !member.permissions.has('ADMINISTRATOR')) {
+            nickChange = true
+            member.setNickname(newNick, 'Roles Synchronization').catch(e => console.error(e))
+          }
+          //Assign Roles
+          let roleStr = '',
+            excluded = ['Pilots', 'Trainers', 'Server Booster', 'VATGOV', 'Muted', 'ATS-ZHQ']
+          member.roles.cache.forEach(role => {
+            if (role.id !== guild.roles.everyone.id
+              && excluded.indexOf(role.name) < 0
+              && roles.indexOf(role.name) < 0)
+              member.roles.remove(role).catch(e => console.error(e))
+          })
+          for (let i = 0; i < roles.length; i++) {
+            const role = guild.roles.cache.find(role => role.name === roles[i])
+            member.roles.add(role).catch(e => console.error(e))
+            roleStr += `${role} `
+          }
+          if (res)
+            return res.json({
+              status: 'OK',
+              msg: `Your roles have been assigned, ${newNick}!<br><em>${roles.join(', ')}</em>`
+            })
+
+          const embed = new MessageEmbed()
+            // Set the title of the field
+            .setTitle('Your roles have been assigned.')
+            // Set the color of the embed
+            .setColor(0x5cb85c)
+            // Set the main content of the embed
+            .setDescription(roleStr)
+          embed.setFooter(nickChange ? `Your new nickname is: ${newNick}` : newNick)
+
+          // Send the embed to the same channel as the message
+          interaction.reply({ embeds: [embed] })
         }
+      }
       )
       .catch(error => {
         console.error(error)
@@ -189,11 +184,11 @@ module.exports = {
   }
 }
 
-function sendError (interaction, me, msg, res, footer = true, header = false) {
+function sendError(interaction, me, msg, res, footer = true, header = false) {
   if (res)
     return res.json({
       status: 'error',
-      msg   : msg
+      msg: msg
     })
   const embed = new me()
     // Set the title of the field
@@ -205,5 +200,5 @@ function sendError (interaction, me, msg, res, footer = true, header = false) {
 
   if (footer) embed.setFooter('Please try again later')
   // Send the embed to the same channel as the message
-  interaction.reply({embeds: [embed]})
+  interaction.reply({ embeds: [embed] })
 }
