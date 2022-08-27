@@ -83,7 +83,7 @@ module.exports = {
             if ((role.facility === 'ZHQ') && role.role.match(/US\d+/)) {
               roles.push('VATUSA')
             }
-
+          }
           if (user.facility === process.env.THIS_FACILITY) {
             roles.push('ZTL')
             homeController = true
@@ -174,7 +174,7 @@ module.exports = {
           interaction.reply({ embeds: [embed] })
         }
       }
-      )
+    )
       .catch(error => {
         console.error(error)
         if (error.response.status === 404) {
