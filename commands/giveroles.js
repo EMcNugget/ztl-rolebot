@@ -96,7 +96,7 @@ module.exports = {
             roles.push('ADM')
           }
           else if (user.rating_short === "SUP") {
-            roles.push('Supervisor')
+            roles.push('SUP')
           }
           else if (user.facility === process.env.THIS_FACILITY) {
             roles.push(user.rating_short)
