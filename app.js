@@ -65,7 +65,7 @@ app.post('/assignRoles/:id', cors(corsOptions), (req, res) => {
   if (!client.guilds.cache.get(process.env.GUILD_ID).members.cache.get(id))
     return res.json({
       status: 'error',
-      msg   : 'You are not a member of the VATUSA Official Discord. Join it using the link below the Assign Roles button.'
+      msg   : 'You are not a member of the ZTL ARTCC Discord.'
     })
   client.commands.get('giveroles').execute(null, id, res, client.guilds.cache.get(process.env.GUILD_ID))
 })

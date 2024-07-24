@@ -77,7 +77,7 @@ module.exports = {
                 roles.push('ZTL Staff')
               }
               if (role.role === 'MTR') {
-                roles.push('ZTL Training Staff')
+                roles.push('Training Team')
               }
             }
             if ((role.facility === 'ZHQ') && role.role.match(/US\d+/)) {
@@ -101,7 +101,7 @@ module.exports = {
           else if (user.facility === process.env.THIS_FACILITY) {
             roles.push(user.rating_short)
             if (user.rating_short.includes('I')) {
-              roles.push('ZTL Training Staff')
+              roles.push('Training Team')
             }
           }
           else {
@@ -150,11 +150,13 @@ module.exports = {
               && roles.indexOf(role.name) < 0)
               member.roles.remove(role).catch(e => console.error(e))
           })
+          let role_ids = []
           for (let i = 0; i < roles.length; i++) {
             const role = guild.roles.cache.find(role => role.name === roles[i])
-            member.roles.add(role).catch(e => console.error(e))
+            role_ids.push(role)
             roleStr += `${role} `
           }
+          member.roles.add(role_ids).catch(e => console.error(e))
           if (res)
             return res.json({
               status: 'OK',
@@ -174,7 +176,7 @@ module.exports = {
           interaction.reply({ embeds: [embed] })
         }
       }
-    )
+      )
       .catch(error => {
         console.error(error)
         if (error.response.status === 404) {
