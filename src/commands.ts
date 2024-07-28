@@ -211,7 +211,7 @@ export const addRoles = async (
               ? `Your roles have been assigned, ${name}!`
               : "Your roles have been assigned." || "",
             member?.nickname as string,
-            role
+            newRoles
           ),
         ],
       });
