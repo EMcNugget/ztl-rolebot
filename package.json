@@ -6,11 +6,15 @@
   "main": "main.js",
   "scripts": {
     "dev": "node --loader ts-node/esm src/main.ts",
-    "build": "tsc && esbuild src/main.ts --bundle --outfile=dist/index.js --platform=node --target=node16 --minify --tree-shaking=true"
+    "build": "tsc && esbuild src/main.ts --bundle --outfile=dist/index.js --platform=node --target=node16 --minify --tree-shaking=true",
+    "start": "node dist/index.js",
+    "start:build": "npm run build && npm run start"
   },
-  "keywords": [],
+  "keywords": [
+    "vatusa"
+  ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@types/node": "^20.14.12",
     "esbuild": "^0.23.0",
