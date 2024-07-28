@@ -163,7 +163,14 @@ export const addRoles = async (
   const userData = await getRoles(member, guild);
 
   if (userData instanceof EmbedBuilder) {
-    await interaction.reply({ embeds: [userData] });
+    if (interaction) {
+      await interaction.reply({ embeds: [userData] });
+    } else {
+      return {
+        success: false,
+        message: userData.data.description,
+      };
+    }
     return;
   } else {
     const name = userData.name;
