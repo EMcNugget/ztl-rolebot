@@ -61,7 +61,9 @@ app.get("/assignRoles", async (req, res) => {
   if (userId) {
     try {
       const member = await guild.members.fetch(userId);
-      await addRoles(member, guild);
+      await addRoles(member, guild).then((embed) => {
+        res.status(500).send(embed);
+      });
       res.status(200).send({
         success: true,
         message: `Roles added for ${member.user.tag}`,
