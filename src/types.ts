@@ -25,12 +25,18 @@ export interface APIResponse {
     flag_preventStaffAssign: boolean | null;
     last_cert_sync: string;
     flag_nameprivacy: boolean;
-    last_compentacy_date: string | null;
+    last_competency_date: string | null;
     promotion_eligible: boolean;
     transfer_eligible: boolean;
     roles: RoleArr[];
     rating_short: string;
-    visiting_facilities: RoleArr[];
+    visiting_facilities: {
+      id: number;
+      cid: number;
+      facility: string;
+      created_at: string;
+      updated_at: string;
+    }[];
     isMentor: boolean;
     isSupIns: boolean;
     last_promotion: string;
