@@ -213,6 +213,11 @@ export const addRoles = async (
         await interaction.reply({
           embeds: [embedError("An error occurred while giving the role.")],
         });
+      } else {
+        return {
+          success: false,
+          message: "An error occurred while giving the role.",
+        };
       }
     }
   }
