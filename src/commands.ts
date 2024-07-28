@@ -4,7 +4,7 @@ import {
   EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js";
-import type { Role, ColorResolvable } from "discord.js";
+import type { Role, ColorResolvable, Guild, GuildMember } from "discord.js";
 import { API_URL } from "./config.js";
 import { ZTLRole, RoleArr, APIResponse } from "./types.js";
 
@@ -47,20 +47,11 @@ export const commands = [
 
 /**
  * Gets roles/ratings and name from VATUSA API
- * @param userID Discord user ID
- * @param discordName ZTL Discord nickname
- * @param interaction
  */
-const getRoles = async (
-  userID: string,
-  discordName: string,
-  interaction: ChatInputCommandInteraction<CacheType>
-) => {
-  const guild = interaction.guild;
-  const member = guild?.members.cache.get(
-    interaction.member?.user.id as string
-  );
-  const url = `${API_URL}user/${userID}/?d`;
+const getRoles = async (member: GuildMember, guild: Guild) => {
+  const userId = member?.user.id;
+  const discordName = member?.nickname;
+  const url = `${API_URL}user/${userId}/?d`;
   try {
     const res = await fetch(url);
     if (res.status == 404) {
@@ -137,9 +128,7 @@ const getRoles = async (
           break;
         default:
           if (
-            response.visiting_facilities.some(
-              (role: RoleArr) => role.facility === "ZTL"
-            )
+            response.visiting_facilities.some((role) => role.facility === "ZTL")
           ) {
             data.roles.push(ZTLRole.VISITOR);
           } else {
@@ -167,32 +156,26 @@ const getRoles = async (
 };
 
 export const addRoles = async (
-  interaction: ChatInputCommandInteraction<CacheType>
+  member: GuildMember,
+  guild: Guild,
+  interaction?: ChatInputCommandInteraction<CacheType>
 ) => {
-  const guild = interaction.guild;
-  const member = guild?.members.cache.get(
-    interaction.member?.user.id as string
-  );
+  const userData = await getRoles(member, guild);
 
-  const data = await getRoles(
-    member?.user.id as string,
-    member?.nickname as string,
-    interaction
-  );
-
-  if (data instanceof EmbedBuilder) {
-    await interaction.reply({ embeds: [data] });
+  if (userData instanceof EmbedBuilder) {
+    await interaction.reply({ embeds: [userData] });
     return;
   } else {
-    const roles = data.roles;
-    const name = data.name;
+    const name = userData.name;
+
+    // roles that are not VATSIM ratings or staff roles
     const currentRoles = member?.roles.cache.filter(
       (role) =>
         !Object.values(ZTLRole).includes(role.name as ZTLRole) &&
         role.name !== "@everyone"
     );
 
-    const newRoles: Role[] = roles.map((roles) => {
+    const newRoles: Role[] = userData.roles.map((roles) => {
       return guild?.roles.cache.find((role) => role.name === roles) as Role;
     });
 
@@ -204,22 +187,26 @@ export const addRoles = async (
         await member?.setNickname(name);
       }
       await member?.roles.add(role);
-      await interaction.reply({
-        embeds: [
-          embedSuccess(
-            name
-              ? `Your roles have been assigned, ${name}!`
-              : "Your roles have been assigned." || "",
-            member?.nickname as string,
-            newRoles
-          ),
-        ],
-      });
+      if (interaction) {
+        await interaction.reply({
+          embeds: [
+            embedSuccess(
+              name
+                ? `Your roles have been assigned, ${name}!`
+                : "Your roles have been assigned." || "",
+              member?.nickname as string,
+              newRoles
+            ),
+          ],
+        });
+      }
     } catch (error) {
-      console.error(error),
+      console.error(error);
+      if (interaction) {
         await interaction.reply({
           embeds: [embedError("An error occurred while giving the role.")],
         });
+      }
     }
   }
 };
