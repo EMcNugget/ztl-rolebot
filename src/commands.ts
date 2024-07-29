@@ -23,9 +23,9 @@ const embedLib = (
     });
 };
 
-const embedSuccess = (name: string, footer: string, roles?: Role[]) => {
+const embedSuccess = (title: string, footer: string, roles?: Role[]) => {
   return embedLib(
-    name,
+    title,
     roles?.map((role) => role.toString()).join(" ") || "",
     0x5cb85c,
     footer
@@ -45,24 +45,43 @@ export const commands = [
     .toJSON(),
 ];
 
+type GetRolesResponse = {
+  status: number;
+  data:
+    | {
+        roles: ZTLRole[];
+        name: string | undefined;
+      }
+    | EmbedBuilder;
+};
+
 /**
  * Gets roles/ratings and name from VATUSA API
  */
-const getRoles = async (member: GuildMember, guild: Guild) => {
+const getRoles = async (
+  member: GuildMember,
+  guild: Guild
+): Promise<GetRolesResponse> => {
   const userId = member?.user.id;
   const discordName = member?.nickname;
   const url = `${API_URL}user/${userId}/?d`;
   try {
     const res = await fetch(url);
     if (res.status == 404) {
-      return embedError(
-        "Your Discord account is not linked on VATUSA or you are not in the VATUSA database. Link it here: https://vatusa.net/my/profile",
-        "Not Linked"
-      );
+      return {
+        status: 404,
+        data: embedError(
+          "Your Discord account is not linked on VATUSA or you are not in the VATUSA database. Link it here: https://vatusa.net/my/profile",
+          "Not Linked"
+        ),
+      };
     } else if (res.status !== 200) {
-      return embedError(
-        `'Unable to communicate with API. Status: ${res.status}`
-      );
+      return {
+        status: res.status,
+        data: embedError(
+          `'Unable to communicate with API. Status: ${res.status}`
+        ),
+      };
     } else {
       const response = ((await res.json()) as APIResponse).data;
       const data = {
@@ -71,9 +90,12 @@ const getRoles = async (member: GuildMember, guild: Guild) => {
       };
 
       if (member?.permissions.has("Administrator")) {
-        return embedError(
-          `Since you have an administrator role, you must contact the Server Owner (${await guild?.fetchOwner()}) to receive your roles.`
-        );
+        return {
+          status: 403,
+          data: embedError(
+            `Since you have an administrator role, you must contact the Server Owner (${await guild?.fetchOwner()}) to receive your roles.`
+          ),
+        };
       }
 
       if (
@@ -147,11 +169,17 @@ const getRoles = async (member: GuildMember, guild: Guild) => {
         }
       }
 
-      return data;
+      return {
+        status: 200,
+        data,
+      };
     }
   } catch (error) {
     console.error(error);
-    return embedError("An error occurred while fetching data.");
+    return {
+      status: 500,
+      data: embedError("An error occurred while fetching data."),
+    };
   }
 };
 
@@ -162,18 +190,18 @@ export const addRoles = async (
 ) => {
   const userData = await getRoles(member, guild);
 
-  if (userData instanceof EmbedBuilder) {
+  if (userData.data instanceof EmbedBuilder) {
     if (interaction) {
-      await interaction.reply({ embeds: [userData] });
+      await interaction.reply({ embeds: [userData.data] });
     } else {
       return {
         success: false,
-        message: userData.data.description,
+        status: userData.status,
+        message: userData.data.data.description,
       };
     }
-    return;
   } else {
-    const name = userData.name;
+    const name = userData.data.name;
 
     // roles that are not VATSIM ratings or staff roles
     const currentRoles = member?.roles.cache.filter(
@@ -182,7 +210,7 @@ export const addRoles = async (
         role.name !== "@everyone"
     );
 
-    const newRoles: Role[] = userData.roles.map((roles) => {
+    const newRoles: Role[] = userData.data.roles.map((roles) => {
       return guild?.roles.cache.find((role) => role.name === roles) as Role;
     });
 
@@ -206,6 +234,12 @@ export const addRoles = async (
             ),
           ],
         });
+      } else {
+        return {
+          success: true,
+          status: 200,
+          message: `Roles added to ${member.nickname}`,
+        };
       }
     } catch (error) {
       console.error(error);
@@ -216,6 +250,7 @@ export const addRoles = async (
       } else {
         return {
           success: false,
+          status: 500,
           message: "An error occurred while giving the role.",
         };
       }
