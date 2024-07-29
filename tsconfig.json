@@ -1,20 +1,6 @@
 {
-  "compilerOptions": {
-    "module": "es6",
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "target": "ESNext",
-    "noImplicitAny": true,
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "noEmit": true,
-    "outDir": "dist",
-    "baseUrl": "src",
-    "paths": {
-      "*": ["node_modules/*"]
-    },
-    "allowJs": true
-  },
-  "include": ["src/**/*"]
+  "extends": "@tsconfig/node22/tsconfig.json",
+  "ts-node": {
+    "transpileOnly": true
+  }
 }
