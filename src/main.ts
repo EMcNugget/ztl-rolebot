@@ -1,4 +1,10 @@
-import { REST, Routes, Client, GatewayIntentBits } from "discord.js";
+import {
+  REST,
+  Routes,
+  Client,
+  GatewayIntentBits,
+  GuildMember,
+} from "discord.js";
 import { BOT_TOKEN, CLIENT_ID, GUILD_ID, PORT } from "./config.js";
 import { commands, addRoles } from "./commands.js";
 import express from "express";
@@ -29,7 +35,7 @@ const client = new Client({
   ],
 });
 
-const guild = client.guilds.cache.get(GUILD_ID);
+client.login(BOT_TOKEN);
 
 client.on("ready", () => {
   if (client.user) {
@@ -38,21 +44,22 @@ client.on("ready", () => {
 });
 
 client.on("interactionCreate", async (interaction) => {
+  const guild = await client.guilds.fetch(GUILD_ID);
+
   if (!interaction.isChatInputCommand()) return;
   const member = guild?.members.cache.get(
     interaction.member?.user.id as string
-  );
+  ) as GuildMember;
   if (interaction.commandName === "giverole") {
     await addRoles(member, guild, interaction);
   }
 });
 
-client.login(BOT_TOKEN);
-
 const app = express();
 
 // /assignRoles?userId=
 app.get("/assignRoles", async (req, res) => {
+  const guild = await client.guilds.fetch(GUILD_ID);
   const userId = req.query.userId as string;
   if (!guild) {
     res.status(500).send("Guild not found");
@@ -61,17 +68,23 @@ app.get("/assignRoles", async (req, res) => {
   if (userId) {
     try {
       const member = await guild.members.fetch(userId);
-      await addRoles(member, guild).then((embed) => {
-        res.status(500).send(embed);
-      });
-      res.status(200).send({
-        success: true,
-        message: `Roles added for ${member.user.tag}`,
-      });
+      await addRoles(member, guild)
+        .then(() => {
+          res.status(200).send({
+            success: true,
+            message: `Roles added for ${member.nickname}`,
+          });
+        })
+        .catch((err) => {
+          res.status(500).send({
+            success: false,
+            message: `Error adding roles: ${err}`,
+          });
+        });
     } catch (err) {
       res.status(500).send({
         success: false,
-        message: `Error adding roles: ${err}`,
+        message: `Error fetching member: ${err}`,
       });
     }
   } else {
