@@ -66,31 +66,35 @@ app.get("/assignRoles", async (req, res) => {
     return;
   }
   if (userId) {
-    try {
-      const member = await guild.members.fetch(userId);
-      await addRoles(member, guild)
-        .then(() => {
-          res.status(200).send({
-            success: true,
-            message: `Roles added for ${member.nickname}`,
-          });
-        })
-        .catch((err) => {
-          res.status(500).send({
-            success: false,
-            message: `Error adding roles: ${err}`,
-          });
-        });
-    } catch (err) {
-      res.status(500).send({
+    const member = await guild.members.fetch(userId);
+    if (!member) {
+      res.status(404).send({
         success: false,
-        message: `Error fetching member: ${err}`,
+        status: 404,
+        message: `User of ID ${userId} not found`,
       });
+      return;
     }
+    await addRoles(member, guild)
+      .then((embed) => {
+        res.status(embed?.status || 500).send({
+          success: embed?.success,
+          status: embed?.status,
+          message: embed?.message,
+        });
+      })
+      .catch((err) => {
+        res.status(500).send({
+          success: false,
+          status: 500,
+          message: `Error adding roles: ${err}`,
+        });
+      });
   } else {
-    res.status(404).send({
+    res.status(400).send({
       success: false,
-      message: `User of ID ${userId} not found`,
+      status: 400,
+      message: `Missing query parameter 'userId'`,
     });
   }
 });
