@@ -61,37 +61,36 @@ const app = express();
 app.get("/assignRoles", async (req, res) => {
   const userId = req.query.userId as string;
   if (!guild) {
-    res.status(500).send("Guild not found");
+    res.status(400).send({
+      status: 400,
+      message: "Error fetching guild.",
+    });
     return;
   }
   if (userId) {
     const member = await guild.members.fetch(userId);
     if (!member) {
       res.status(404).send({
-        success: false,
         status: 404,
-        message: `User of ID ${userId} not found`,
+        message: "You are not a member of the ZTL ARTCC Discord.",
       });
       return;
     }
     await addRoles(member, guild)
       .then((embed) => {
         res.status(embed?.status || 500).send({
-          success: embed?.success,
           status: embed?.status,
           message: embed?.message,
         });
       })
       .catch((err) => {
         res.status(500).send({
-          success: false,
           status: 500,
           message: `Error adding roles: ${err}`,
         });
       });
   } else {
     res.status(400).send({
-      success: false,
       status: 400,
       message: `Missing query parameter 'userId'`,
     });
