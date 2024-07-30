@@ -2,7 +2,6 @@ import {
   CacheType,
   ChatInputCommandInteraction,
   EmbedBuilder,
-  SlashCommandBuilder,
 } from "discord.js";
 import type { Role, ColorResolvable, Guild, GuildMember } from "discord.js";
 import { API_URL } from "./config.js";
@@ -35,15 +34,6 @@ const embedSuccess = (title: string, footer: string, roles?: Role[]) => {
 const embedError = (error: string, footer?: string) => {
   return embedLib("Error", error, 0xff0000, footer || "Please try again later");
 };
-
-export const commands = [
-  new SlashCommandBuilder()
-    .setName("giverole")
-    .setDescription(
-      "Assign roles for channel access. Your Discord account must be linked on the VATUSA website."
-    )
-    .toJSON(),
-];
 
 type GetRolesResponse = {
   status: number;
@@ -199,25 +189,25 @@ export const addRoles = async (
   } else {
     const { roles, name } = userData.data;
 
-    // roles that are not VATSIM ratings or staff roles
-    const currentRoles = member?.roles.cache.filter(
-      (role) =>
-        !Object.values(ZTLRole).includes(role.name as ZTLRole) &&
-        role.name !== "@everyone"
-    );
-
     const newRoles: Role[] = roles.map((roles) => {
       return guild?.roles.cache.find((role) => role.name === roles) as Role;
     });
 
-    const combinedRoles = [...(currentRoles?.values() ?? []), ...newRoles];
-
     try {
-      await member?.roles.remove(member?.roles.cache);
+      await member?.roles.remove(
+        member?.roles.cache.filter(
+          (role) =>
+            Object.values(ZTLRole).includes(role.name as ZTLRole) &&
+            role.name !== "@everyone"
+        )
+      );
       if (name && name !== member?.nickname) {
         await member?.setNickname(name);
       }
-      await member?.roles.add(combinedRoles);
+      await member?.roles.add([
+        ...member.roles.cache.map((role) => role),
+        ...newRoles,
+      ]);
       if (interaction) {
         await interaction.reply({
           embeds: [
@@ -225,7 +215,7 @@ export const addRoles = async (
               name
                 ? `Your roles have been assigned, ${name}!`
                 : "Your roles have been assigned." || "",
-              name ? `New nickname: ${name}` : member?.nickname || "",
+              name ? `New nickname: ${name}` : member?.displayName || "",
               newRoles
             ),
           ],
