@@ -51,7 +51,7 @@ export enum ZTLRole {
   EC = "Events Coordinator",
   FE = "Facility Engineer",
   WM = "Webmaster",
-  ZTLSRSTAFF = "ZTL Senior Staff",
+  ZTLSRSTAFF = "ZTL Sr Staff",
   ZTLSTAFF = "ZTL Staff",
   TRNGTEAM = "Training Team",
   VATUSA = "VATUSA",
