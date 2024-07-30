@@ -14,7 +14,6 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@tsconfig/node22": "^22.0.0",
     "@types/express": "^4.17.21",
     "@types/node": "^22.0.0",
     "typescript": "^5.5.4",
