@@ -1,29 +1,7 @@
-import {
-  REST,
-  Routes,
-  Client,
-  GatewayIntentBits,
-  GuildMember,
-} from "discord.js";
-import { BOT_TOKEN, CLIENT_ID, GUILD_ID, PORT } from "./config.js";
-import { commands, addRoles } from "./commands.js";
+import { Client, GatewayIntentBits, GuildMember } from "discord.js";
+import { BOT_TOKEN, GUILD_ID, PORT } from "./config.js";
+import { addRoles } from "./commands.js";
 import express from "express";
-
-const rest = new REST({ version: "10" }).setToken(BOT_TOKEN);
-
-(async () => {
-  try {
-    console.log("Started refreshing application (/) commands.");
-
-    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {
-      body: commands,
-    });
-
-    console.log("Successfully reloaded application (/) commands.");
-  } catch (error) {
-    console.error(error);
-  }
-})();
 
 const client = new Client({
   intents: [
