@@ -149,10 +149,11 @@ const getRoles = async (member: GuildMember): Promise<GetRolesResponse> => {
       if (Object.values(ZTLRole).includes(response.rating_short as ZTLRole)) {
         if (response.rating_short === "OBS") {
           data.roles.push(ZTLRole.OBS);
-        } else if (response.rating_short.includes("I")) {
-          data.roles.push(ZTLRole.TRNGTEAM);
         } else {
           data.roles.push(response.rating_short as ZTLRole);
+          if (response.rating_short.includes("I")) {
+            data.roles.push(ZTLRole.TRNGTEAM);
+          }
         }
       }
 
