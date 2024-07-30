@@ -37,6 +37,8 @@ const client = new Client({
 
 client.login(BOT_TOKEN);
 
+const guild = await client.guilds.fetch(GUILD_ID);
+
 client.on("ready", () => {
   if (client.user) {
     console.log(`Logged in as ${client.user.tag}`);
@@ -44,8 +46,6 @@ client.on("ready", () => {
 });
 
 client.on("interactionCreate", async (interaction) => {
-  const guild = await client.guilds.fetch(GUILD_ID);
-
   if (!interaction.isChatInputCommand()) return;
   const member = guild?.members.cache.get(
     interaction.member?.user.id as string
@@ -59,7 +59,6 @@ const app = express();
 
 // /assignRoles?userId=
 app.get("/assignRoles", async (req, res) => {
-  const guild = await client.guilds.fetch(GUILD_ID);
   const userId = req.query.userId as string;
   if (!guild) {
     res.status(500).send("Guild not found");
