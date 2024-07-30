@@ -58,10 +58,7 @@ type GetRolesResponse = {
 /**
  * Gets roles/ratings and name from VATUSA API
  */
-const getRoles = async (
-  member: GuildMember,
-  guild: Guild
-): Promise<GetRolesResponse> => {
+const getRoles = async (member: GuildMember): Promise<GetRolesResponse> => {
   const userId = member?.user.id;
   const discordName = member?.nickname;
   const url = `${API_URL}user/${userId}/?d`;
@@ -93,7 +90,7 @@ const getRoles = async (
         return {
           status: 403,
           data: embedError(
-            `Since you have an administrator role, you must contact the Server Owner (${await guild?.fetchOwner()}) to receive your roles.`
+            `Since you have an administrator role, you must contact the server owner to receive your roles.`
           ),
         };
       }
@@ -188,20 +185,19 @@ export const addRoles = async (
   guild: Guild,
   interaction?: ChatInputCommandInteraction<CacheType>
 ) => {
-  const userData = await getRoles(member, guild);
+  const userData = await getRoles(member);
 
   if (userData.data instanceof EmbedBuilder) {
     if (interaction) {
       await interaction.reply({ embeds: [userData.data] });
     } else {
       return {
-        success: false,
         status: userData.status,
         message: userData.data.data.description,
       };
     }
   } else {
-    const name = userData.data.name;
+    const { roles, name } = userData.data;
 
     // roles that are not VATSIM ratings or staff roles
     const currentRoles = member?.roles.cache.filter(
@@ -210,18 +206,18 @@ export const addRoles = async (
         role.name !== "@everyone"
     );
 
-    const newRoles: Role[] = userData.data.roles.map((roles) => {
+    const newRoles: Role[] = roles.map((roles) => {
       return guild?.roles.cache.find((role) => role.name === roles) as Role;
     });
 
-    const role = [...(currentRoles?.values() ?? []), ...newRoles];
+    const combinedRoles = [...(currentRoles?.values() ?? []), ...newRoles];
 
     try {
       await member?.roles.remove(member?.roles.cache);
       if (name && name !== member?.nickname) {
         await member?.setNickname(name);
       }
-      await member?.roles.add(role);
+      await member?.roles.add(combinedRoles);
       if (interaction) {
         await interaction.reply({
           embeds: [
@@ -236,7 +232,6 @@ export const addRoles = async (
         });
       } else {
         return {
-          success: true,
           status: 200,
           message: `Roles added to ${member.nickname}`,
         };
@@ -249,7 +244,6 @@ export const addRoles = async (
         });
       } else {
         return {
-          success: false,
           status: 500,
           message: "An error occurred while giving the role.",
         };
