@@ -32,7 +32,12 @@ const embedSuccess = (title: string, footer: string, roles?: Role[]) => {
 };
 
 const embedError = (error: string, footer?: string) => {
-  return embedLib("Error", error, 0xff0000, footer || "Please try again later");
+  return embedLib(
+    "Error!",
+    error,
+    0xff0000,
+    footer || "Please try again later"
+  );
 };
 
 type GetRolesResponse = {
@@ -213,10 +218,10 @@ export const addRoles = async (
         await interaction.reply({
           embeds: [
             embedSuccess(
+              "Your roles have been assigned.",
               name
-                ? `Your roles have been assigned, ${name}!`
-                : "Your roles have been assigned." || "",
-              name ? `New nickname: ${name}` : member?.displayName || "",
+                ? `Your new nickname is: ${name}`
+                : member?.displayName || "",
               newRoles
             ),
           ],
