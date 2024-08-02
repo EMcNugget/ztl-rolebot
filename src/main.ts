@@ -28,7 +28,7 @@ client.on("interactionCreate", async (interaction) => {
   const member = guild?.members.cache.get(
     interaction.member?.user.id as string
   ) as GuildMember;
-  if (interaction.commandName === "giverole") {
+  if (interaction.commandName === "giveroles") {
     await addRoles(member, guild, interaction);
   }
 });

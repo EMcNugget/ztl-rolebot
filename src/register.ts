@@ -3,7 +3,7 @@ import { BOT_TOKEN, CLIENT_ID, GUILD_ID } from "./config.js";
 
 const commands = [
   new SlashCommandBuilder()
-    .setName("giverole")
+    .setName("giveroles")
     .setDescription(
       "Assign roles for channel access. Your Discord account must be linked on the VATUSA website."
     )
