@@ -68,4 +68,5 @@ export enum ZTLRole {
   I3 = "I3",
   SUP = "SUP",
   ADM = "ADM",
+  DHAGASH = "Quiet Dhagash",
 }
