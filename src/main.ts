@@ -38,6 +38,7 @@ const app = express();
 // /assignRoles?userId=
 app.get("/assignRoles", async (req, res) => {
   const userId = req.query.userId as string;
+
   if (!guild) {
     res.status(400).send({
       status: 400,
@@ -45,15 +46,21 @@ app.get("/assignRoles", async (req, res) => {
     });
     return;
   }
-  if (userId) {
-    const member = await guild.members.fetch(userId);
-    if (!member) {
+  const params = Object.keys(req.query);
+
+  let member: GuildMember;
+
+  if (userId && params.includes("userId")) {
+    try {
+      member = await guild.members.fetch(userId);
+    } catch (err) {
       res.status(404).send({
         status: 404,
         message: "You are not a member of the ZTL ARTCC Discord.",
       });
       return;
     }
+
     await addRoles(member, guild)
       .then((embed) => {
         res.status(embed?.status || 500).send({
@@ -68,10 +75,17 @@ app.get("/assignRoles", async (req, res) => {
         });
       });
   } else {
-    res.status(400).send({
-      status: 400,
-      message: `Missing query parameter 'userId'`,
-    });
+    if (!params.includes("userId") && params.length !== 0) {
+      res.status(400).send({
+        status: 400,
+        message: `Incorrect query parameters. Expected 'userId'`,
+      });
+    } else {
+      res.status(400).send({
+        status: 400,
+        message: `Missing query parameter 'userId'`,
+      });
+    }
   }
 });
 

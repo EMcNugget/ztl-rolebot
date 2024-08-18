@@ -80,6 +80,7 @@ const getRoles = async (member: GuildMember): Promise<GetRolesResponse> => {
         roles: [] as ZTLRole[],
         name: undefined as string | undefined,
       };
+      
       //Because Dhagash
       if (response.cid === 1299471) {
         data.roles.push(ZTLRole.DHAGASH);
