@@ -80,7 +80,7 @@ const getRoles = async (member: GuildMember): Promise<GetRolesResponse> => {
         roles: [] as ZTLRole[],
         name: undefined as string | undefined,
       };
-      
+
       //Because Dhagash
       if (response.cid === 1299471) {
         data.roles.push(ZTLRole.DHAGASH);
@@ -156,10 +156,10 @@ const getRoles = async (member: GuildMember): Promise<GetRolesResponse> => {
           break;
       }
 
-      if (Object.values(ZTLRole).includes(response.rating_short as ZTLRole)) {
-        if (response.rating_short === "OBS") {
-          data.roles.push(ZTLRole.OBS);
-        } else {
+      if (response.rating_short === "OBS") {
+        data.roles.push(ZTLRole.OBS);
+      } else {
+        if (Object.values(ZTLRole).includes(response.rating_short as ZTLRole)) {
           data.roles.push(response.rating_short as ZTLRole);
           if (response.rating_short.includes("I")) {
             data.roles.push(ZTLRole.TRNGTEAM);
@@ -199,7 +199,6 @@ export const addRoles = async (
     }
   } else {
     const { roles, name } = userData.data;
-
     const newRoles: Role[] = roles.map((roles) => {
       return guild?.roles.cache.find((role) => role.name === roles) as Role;
     });
@@ -215,10 +214,7 @@ export const addRoles = async (
       if (name && name !== member?.nickname) {
         await member?.setNickname(name);
       }
-      await member?.roles.add([
-        ...member.roles.cache.map((role) => role),
-        ...newRoles,
-      ]);
+      await member?.roles.add(newRoles);
       if (interaction) {
         await interaction.reply({
           embeds: [
