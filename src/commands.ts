@@ -40,19 +40,16 @@ const embedError = (error: string, footer?: string) => {
   );
 };
 
-type GetRolesResponse = {
-  status: number;
-  data:
-    | {
-        roles: ZTLRole[];
-        name: string | undefined;
-      }
-    | EmbedBuilder;
+type RoleData = {
+  roles: ZTLRole[];
+  name: string | undefined;
 };
 
-/**
- * Gets roles/ratings and name from VATUSA API
- */
+type GetRolesResponse = {
+  status: number;
+  data: RoleData | EmbedBuilder;
+};
+
 const getRoles = async (member: GuildMember): Promise<GetRolesResponse> => {
   const userId = member?.user.id;
   const discordName = member?.nickname;
@@ -76,9 +73,9 @@ const getRoles = async (member: GuildMember): Promise<GetRolesResponse> => {
       };
     } else {
       const response = ((await res.json()) as APIResponse).data;
-      const data = {
-        roles: [] as ZTLRole[],
-        name: undefined as string | undefined,
+      const data: RoleData = {
+        roles: [],
+        name: undefined,
       };
 
       //Because Dhagash
@@ -159,11 +156,9 @@ const getRoles = async (member: GuildMember): Promise<GetRolesResponse> => {
       if (response.rating_short === "OBS") {
         data.roles.push(ZTLRole.OBS);
       } else {
-        if (Object.values(ZTLRole).includes(response.rating_short as ZTLRole)) {
-          data.roles.push(response.rating_short as ZTLRole);
-          if (response.rating_short.includes("I")) {
-            data.roles.push(ZTLRole.TRNGTEAM);
-          }
+        data.roles.push(response.rating_short as ZTLRole);
+        if (response.rating_short.startsWith("I")) {
+          data.roles.push(ZTLRole.TRNGTEAM);
         }
       }
 
