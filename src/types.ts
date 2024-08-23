@@ -1,12 +1,12 @@
-export interface RoleArr {
+export type RoleArr = {
   id: number;
   cid: number;
   facility: string;
   role: string;
   created_at: string;
-}
+};
 
-export interface APIResponse {
+export type APIResponse = {
   data: {
     cid: number;
     fname: string;
@@ -42,7 +42,7 @@ export interface APIResponse {
     last_promotion: string;
   };
   testing: boolean;
-}
+};
 
 export enum ZTLRole {
   ATM = "Air Traffic Manager",
