@@ -1,11 +1,3 @@
-export type RoleArr = {
-  id: number;
-  cid: number;
-  facility: string;
-  role: string;
-  created_at: string;
-};
-
 export type APIResponse = {
   data: {
     cid: number;
@@ -28,7 +20,13 @@ export type APIResponse = {
     last_competency_date: string | null;
     promotion_eligible: boolean;
     transfer_eligible: boolean;
-    roles: RoleArr[];
+    roles: {
+      id: number;
+      cid: number;
+      facility: string;
+      role: string;
+      created_at: string;
+    }[];
     rating_short: string;
     visiting_facilities: {
       id: number;

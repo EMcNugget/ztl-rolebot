@@ -5,7 +5,7 @@ import {
 } from "discord.js";
 import type { Role, ColorResolvable, Guild, GuildMember } from "discord.js";
 import { API_URL } from "./config.js";
-import { ZTLRole, RoleArr, APIResponse } from "./types.js";
+import { ZTLRole, APIResponse } from "./types.js";
 
 const embedLib = (
   title: string,
@@ -101,7 +101,7 @@ const getRoles = async (member: GuildMember): Promise<GetRolesResponse> => {
         data.name = undefined;
       }
 
-      response.roles.forEach((role: RoleArr) => {
+      response.roles.forEach((role) => {
         if (role.facility === "ZTL") {
           switch (role.role) {
             case "ATM":
