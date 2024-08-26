@@ -50,6 +50,11 @@ type GetRolesResponse = {
   data: RoleData | EmbedBuilder;
 };
 
+/**
+ * @todo When VATSIM/VATUSA changes the rating ID that encodes the base rating and role
+ *       (SUP, ADM, I1, I3, etc), refactor this to use the "rating" field instead of "rating_short".
+ *       IDs: https://vatsim.dev/resources/ratings
+ */
 const getRoles = async (member: GuildMember): Promise<GetRolesResponse> => {
   const userId = member?.user.id;
   const discordName = member?.nickname;
@@ -156,9 +161,14 @@ const getRoles = async (member: GuildMember): Promise<GetRolesResponse> => {
       if (response.rating_short === "OBS") {
         data.roles.push(ZTLRole.OBS);
       } else {
-        data.roles.push(response.rating_short as ZTLRole);
         if (response.rating_short.startsWith("I")) {
-          data.roles.push(ZTLRole.TRNGTEAM);
+          if (response.facility === "ZTL") {
+            data.roles.push(ZTLRole.TRNGTEAM, response.rating_short as ZTLRole);
+          } else {
+            data.roles.push(ZTLRole.C1);
+          }
+        } else {
+          data.roles.push(response.rating_short as ZTLRole);
         }
       }
 
