@@ -51,7 +51,7 @@ type GetRolesResponse = {
 };
 
 /**
- * @todo When VATSIM/VATUSA changes the rating ID that encodes the base rating and role
+ * @todo When VATSIM changes the rating ID's to encode controller ratings and network staff roles
  *       (SUP, ADM, I1, I3, etc), refactor this to use the "rating" field instead of "rating_short".
  *       IDs: https://vatsim.dev/resources/ratings
  */
@@ -82,11 +82,6 @@ const getRoles = async (member: GuildMember): Promise<GetRolesResponse> => {
         roles: [],
         name: undefined,
       };
-
-      //Because Dhagash
-      if (response.cid === 1299471) {
-        data.roles.push(ZTLRole.DHAGASH);
-      }
 
       if (member?.permissions.has("Administrator")) {
         return {
